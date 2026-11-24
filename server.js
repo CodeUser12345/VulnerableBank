@@ -38,9 +38,9 @@ app.post('/login', (req, res) => {
     }
     if (user) {
       // Pass the username to the dashboard for the XSS vulnerability
-      res.render('dashboard', { 
+      res.render('dashboard', {
         username: user.username,
-        balance: user.balance.toFixed(2) 
+        balance: user.balance.toFixed(2)
       });
     } else {
       res.render('login', { error: 'Invalid username or password.' });
@@ -52,5 +52,3 @@ app.post('/login', (req, res) => {
 app.listen(PORT, () => {
   console.log(`VulnerableBank server running on http://localhost:${PORT}`);
 });
-
-
