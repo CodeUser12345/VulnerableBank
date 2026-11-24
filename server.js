@@ -7,11 +7,8 @@ const db = require('./database.js');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- VULNERABILITY FOR GITGUARDIAN ---
-// A developer accidentally left a hardcoded secret here.
-const OLD_DB_CONNECTION_STRING = "postgres://admin:supersecretpassword123!@db.legacy.vulnerable.bank/prod";
-// -----------------------------------------
-// -----------------------------------------
+// --- FIXED: hardcoded secret replaced with environment variable ---
+const OLD_DB_CONNECTION_STRING = process.env.DB_CONNECTION_STRING || "";
 
 // Middleware to parse form data
 app.use(express.urlencoded({ extended: true }));
@@ -30,15 +27,12 @@ app.get('/', (req, res) => {
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  // --- VULNERABILITY FOR OWASP ZAP (SQL Injection) ---
-  // The query is built by concatenating user input directly.
-  // An attacker can use an input like: ' OR 1=1 --
-  // This bypasses the password check.
-  const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
-  console.log(`Executing vulnerable query: ${query}`);
-  // ----------------------------------------------------
+  // Login query: parameterized (SQL injection fixed).
+  const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
+  const params = [username, password];
+  console.log('Executing login query');
 
-  db.get(query, [], (err, user) => {
+  db.get(query, params, (err, user) => {
     if (err) {
       return res.status(500).send("Server error");
     }
